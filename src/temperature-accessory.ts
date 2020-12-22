@@ -1,138 +1,60 @@
 import {
-  Service,
-  PlatformAccessory,
+  AccessoryConfig,
+  AccessoryPlugin,
+  API,
+  CharacteristicEventTypes,
   CharacteristicGetCallback,
+  HAP,
+  Logging,
+  Service,
 } from 'homebridge';
 
-import { ExampleHomebridgePlatform } from './platform';
+let hap: HAP;
 
-/**
- * Platform Accessory
- * An instance of this class is created for each accessory your platform registers
- * Each accessory may expose multiple services of different service types.
- */
-export class TemperaturePlatformAccessory {
-  private service: Service;
+export class AM2320TemperatureSensor implements AccessoryPlugin {
 
-  /**
-   * These are just used to create a working example
-   * You should implement your own code to track the state of your accessory
-   */
-  private states = {
-    temperature: 0,
-    humidity: 0,
-  };
+  private readonly log: Logging;
+  private readonly name: string;
+  private switchOn = false;
 
-  constructor(
-    private readonly platform: ExampleHomebridgePlatform,
-    private readonly accessory: PlatformAccessory,
-  ) {
+  private readonly switchService: Service;
+  private readonly informationService: Service;
 
-    // set accessory information
-    this.accessory
-      .getService(this.platform.Service.AccessoryInformation)!
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, '@zvaehn')
-      .setCharacteristic(this.platform.Characteristic.Model, 'AM2320-Sensor')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, '0000-1111-2222-3333');
+  constructor(log: Logging, config: AccessoryConfig, api: API) {
+    this.log = log;
+    this.name = config.name;
 
-    // get the TemperatureSensor service if it exists, otherwise create a new TemperatureSensor service
-    // you can create multiple services for each accessory
-    this.service =
-      this.accessory.getService(this.platform.Service.TemperatureSensor) ||
-      this.accessory.addService(this.platform.Service.TemperatureSensor);
+    this.switchService = new hap.Service.Switch(this.name);
+    this.switchService.getCharacteristic(hap.Characteristic.On)
+      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+        log.info('Current state of the switch was returned: ' + (this.switchOn ? 'ON' : 'OFF'));
+        callback(undefined, this.switchOn);
+      });
 
-    // set the service name, this is what is displayed as the default name on the Home app
-    // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.displayName);
+    this.informationService = new hap.Service.AccessoryInformation()
+      .setCharacteristic(hap.Characteristic.Manufacturer, 'Custom Manufacturer')
+      .setCharacteristic(hap.Characteristic.Model, 'Custom Model');
 
-    // each service must implement at-minimum the "required characteristics" for the given service type
-    // see https://developers.homebridge.io/#/service/Lightbulb
-
-    // register handlers for the Temperature Characteristic
-    this.service
-      .getCharacteristic(this.platform.Characteristic.CurrentTemperature)
-      .on('get', this.getTemperature.bind(this));               // GET - bind to the `getTemperature` method below
-
-    // register handlers for the Humidity Characteristic
-    // this.service
-    //   .getCharacteristic(this.platform.Characteristic.CurrentHumidity)
-    //   .on('set', this.setBrightness.bind(this));       // SET - bind to the 'setBrightness` method below
-
- 
-    /**
-     * Updating characteristics values asynchronously.
-     * 
-     * Example showing how to update the state of a Characteristic asynchronously instead
-     * of using the `on('get')` handlers.
-     * Here we change update the motion sensor trigger states on and off every 10 seconds
-     * the `updateCharacteristic` method.
-     * 
-     */
-    // let motionDetected = false;
-    // setInterval(() => {
-    //   // EXAMPLE - inverse the trigger
-    //   motionDetected = !motionDetected;
-
-    //   // push the new value to HomeKit
-    //   motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, motionDetected);
-    //   motionSensorTwoService.updateCharacteristic(this.platform.Characteristic.MotionDetected, !motionDetected);
-
-    //   this.platform.log.debug('Triggering motionSensorOneService:', motionDetected);
-    //   this.platform.log.debug('Triggering motionSensorTwoService:', !motionDetected);
-    // }, 10000);
+    log.info('Switch finished initializing!');
   }
 
-  /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, turning on a Light bulb.
+  /*
+   * This method is optional to implement. It is called when HomeKit ask to identify the accessory.
+   * Typical this only ever happens at the pairing process.
    */
-  // setOn(value: CharacteristicValue, callback: CharacteristicSetCallback) {
-
-  //   // implement your own code to turn your device on/off
-  //   this.states.On = value as boolean;
-
-  //   this.platform.log.debug('Set Characteristic On ->', value);
-
-  //   // you must call the callback function
-  //   callback(null);
-  // }
-
-  /**
-   * Handle the "GET" requests from HomeKit
-   * These are sent when HomeKit wants to know the current state of the accessory, for example, checking if a Light bulb is on.
-   * 
-   * GET requests should return as fast as possbile. A long delay here will result in
-   * HomeKit being unresponsive and a bad user experience in general.
-   * 
-   * If your device takes time to respond you should update the status of your device
-   * asynchronously instead using the `updateCharacteristic` method instead.
-
-   * @example
-   * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
-   */
-  getTemperature(callback: CharacteristicGetCallback) {
-    const temp = this.states.temperature;
-    this.platform.log.debug('Get Characteristic Temperature ->', temp);
-
-    // you must call the callback function
-    // the first argument should be null if there were no errors
-    // the second argument should be the value to return
-    callback(null, temp);
+  identify(): void {
+    this.log('Identify!');
   }
 
-  /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, changing the Brightness
+  /*
+   * This method is called directly after creation of this instance.
+   * It should return all services which should be added to the accessory.
    */
-  // setBrightness(value: CharacteristicValue, callback: CharacteristicSetCallback) {
-
-  //   // implement your own code to set the brightness
-  //   this.states.Brightness = value as number;
-
-  //   this.platform.log.debug('Set Characteristic Brightness -> ', value);
-
-  //   // you must call the callback function
-  //   callback(null);
-  // }
+  getServices(): Service[] {
+    return [
+      this.informationService,
+      this.switchService,
+    ];
+  }
 
 }
