@@ -17,7 +17,68 @@ let hap: HAP;
 export = (api: API) => {
   hap = api.hap;
   api.registerAccessory('AM2320TemperatureSensor', AM2320TemperatureSensor);
+  api.registerAccessory('AM2320HumiditySensor', AM2320HumiditySensor);
 };
+
+interface SensorData {
+  temperature: number;
+  humidity: number;
+}
+
+class AM2320HumiditySensor implements AccessoryPlugin {
+  private readonly log: Logging;
+  private readonly name: string;
+  private humidity = 0;
+
+  private readonly humidityService: Service;
+  private readonly informationService: Service;
+
+  constructor(log: Logging, config: AccessoryConfig, api: API) {
+    this.log = log;
+    this.name = config.name;
+
+    this.humidityService = new hap.Service.HumiditySensor(this.name);
+
+    this.humidityService
+      .getCharacteristic(hap.Characteristic.CurrentRelativeHumidity)
+      .on(CharacteristicEventTypes.GET, async (callback: CharacteristicGetCallback) => {
+        try {
+          const sensorData: SensorData = await readSensorData();
+          this.humidity = sensorData.humidity;
+        } catch (err) {
+          this.log.error(err);
+          this.humidity = 0;
+        } finally {
+          callback(undefined, this.humidity);
+        }
+      });
+
+    this.informationService = new hap.Service.AccessoryInformation()
+      .setCharacteristic(hap.Characteristic.Manufacturer, 'Custom Manufacturer')
+      .setCharacteristic(hap.Characteristic.Model, 'Custom Model');
+
+    log.info('Sensor finished initializing!');
+  }
+
+  /*
+   * This method is optional to implement. It is called when HomeKit ask to identify the accessory.
+   * Typical this only ever happens at the pairing process.
+   */
+  identify(): void {
+    this.log('Identify!');
+  }
+
+  /*
+   * This method is called directly after creation of this instance.
+   * It should return all services which should be added to the accessory.
+   */
+  getServices(): Service[] {
+    return [
+      this.informationService,
+      this.humidityService,
+    ];
+  }
+}
 
 class AM2320TemperatureSensor implements AccessoryPlugin {
   private readonly log: Logging;
@@ -35,9 +96,16 @@ class AM2320TemperatureSensor implements AccessoryPlugin {
 
     this.temperatureService
       .getCharacteristic(hap.Characteristic.CurrentTemperature)
-      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-        log.info('Current temperature is: ', this.temperature);
-        callback(undefined, this.temperature);
+      .on(CharacteristicEventTypes.GET, async (callback: CharacteristicGetCallback) => {
+        try {
+          const sensorData: SensorData = await readSensorData();
+          this.temperature = sensorData.temperature;
+        } catch (err) {
+          this.log.error(err);
+          this.temperature = 0;
+        } finally {
+          callback(undefined, this.temperature);
+        }
       });
 
     this.informationService = new hap.Service.AccessoryInformation()
@@ -45,25 +113,6 @@ class AM2320TemperatureSensor implements AccessoryPlugin {
       .setCharacteristic(hap.Characteristic.Model, 'Custom Model');
 
     log.info('Sensor finished initializing!');
-  }
-
-  getTemperature() {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const spawn = require('child_process').spawn;
-    const pythonProcess = spawn('python', ['lib/read-am2320-sensor.py']);
-
-    pythonProcess.stdout.on('data', (data) => {
-      this.log.debug(data);
-      
-      try {
-        const sensorData = JSON.parse(data);
-        this.temperature = sensorData.temperature;
-      } catch (err) {
-        this.log.error(err);
-        this.temperature = 0;
-      }
-    });
-    
   }
 
   /*
@@ -84,5 +133,25 @@ class AM2320TemperatureSensor implements AccessoryPlugin {
       this.temperatureService,
     ];
   }
+}
 
+async function readSensorData(): Promise<SensorData> {
+  const sensorScriptFile = `${__dirname}/../src/lib/read-am2320-sensor.py`;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const spawn = require('child_process').spawn;
+  const process = spawn('python3', [sensorScriptFile]);
+
+  return new Promise((resolve, reject) =>{
+    process.stdout.on('data', data => {
+      try {
+        resolve(JSON.parse(data.toString()));
+      } catch (err) {
+        reject(err.toString());
+      }
+    });
+
+    process.stderr.on('data', err => {
+      reject(err.toString())
+    });
+  });
 }

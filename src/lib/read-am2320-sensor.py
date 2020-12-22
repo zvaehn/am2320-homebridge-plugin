@@ -3,6 +3,7 @@ import board
 import busio
 import adafruit_am2320
 import json
+import sys
 
 # create the I2C shared bus
 i2c = busio.I2C(board.SCL, board.SDA)
@@ -14,4 +15,5 @@ data = {
 }
 
 print(json.dumps(data))
-
+sys.stdout.flush()
+sys.exit()
