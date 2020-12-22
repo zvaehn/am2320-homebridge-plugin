@@ -51,6 +51,7 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
    * must not be registered again to prevent "duplicate UUID" errors.
    */
   discoverDevices() {
+    this.log.info('discovering devices...');
 
     // EXAMPLE ONLY
     // A real plugin you would discover accessories from the local network, cloud services
