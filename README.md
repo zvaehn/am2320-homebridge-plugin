@@ -10,6 +10,24 @@
 - installed homebridge (`npm install -g homebridge`)
 - Python executable `python3`
 
+## Installation
+
+- `npm install -g homebridge-am2320-plugin`
+- Update your `config.json`
+
+```json
+"accessories": [
+  {
+    "accessory": "AM2320TemperatureSensor",
+    "name": "Temperature"
+  },
+  {
+    "accessory": "AM2320HumiditySensor",
+    "name": "Humidity"
+  }
+]
+```
+
 # Homebridge Platform Plugin Template
 
 This is a template Homebridge platform plugin and can be used as a base to help you get started developing your own plugin.
