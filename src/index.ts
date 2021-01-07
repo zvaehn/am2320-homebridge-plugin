@@ -33,7 +33,7 @@ class AM2320HumiditySensor implements AccessoryPlugin {
   private readonly humidityService: Service;
   private readonly informationService: Service;
 
-  constructor(log: Logging, config: AccessoryConfig, api: API) {
+  constructor(log: Logging, config: AccessoryConfig/*, api: API*/) {
     this.log = log;
     this.name = config.name;
 
@@ -87,7 +87,7 @@ class AM2320TemperatureSensor implements AccessoryPlugin {
   private readonly temperatureService: Service;
   private readonly informationService: Service;
 
-  constructor(log: Logging, config: AccessoryConfig, api: API) {
+  constructor(log: Logging, config: AccessoryConfig/*, api: API*/) {
     this.log = log;
     this.name = config.name;
 
