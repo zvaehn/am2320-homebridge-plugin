@@ -1,13 +1,13 @@
 {
-  "private": true,
+  "private": false,
   "displayName": "Homebridge AM2320 Plugin",
   "name": "homebridge-am2320-plugin",
   "version": "0.0.1",
-  "description": "A short description about what your plugin does.",
+  "description": "Provides the AM2320 Sensor as accessories to your homebridge.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "git@github.com:zvaehn/am2320-homebridge-plugin.git"
   },
   "bugs": {
     "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
@@ -24,7 +24,11 @@
     "prepublishOnly": "npm run lint && npm run build"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "am2320",
+    "temperature",
+    "humidity",
+    "sensor"
   ],
   "dependencies": {
     "python-shell": "^2.0.3"

@@ -6,6 +6,10 @@
 </p>
 
 
+# Prerequirements
+- installed homebridge (`npm install -g homebridge`)
+- Python executable `python3`
+
 # Homebridge Platform Plugin Template
 
 This is a template Homebridge platform plugin and can be used as a base to help you get started developing your own plugin.
