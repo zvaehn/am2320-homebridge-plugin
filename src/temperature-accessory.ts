@@ -32,10 +32,10 @@ export class AM2320TemperatureSensor implements AccessoryPlugin {
       });
 
     this.informationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(hap.Characteristic.Manufacturer, 'Custom Manufacturer')
-      .setCharacteristic(hap.Characteristic.Model, 'Custom Model');
+      .setCharacteristic(hap.Characteristic.Manufacturer, 'adafruit')
+      .setCharacteristic(hap.Characteristic.Model, 'AM2320 Homebridge Plugin');
 
-    log.info('Switch finished initializing!');
+    log.info('AM2320TemperatureSensor finished initializing!');
   }
 
   /*
