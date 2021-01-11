@@ -134,7 +134,7 @@ class AM2320TemperatureSensor implements AccessoryPlugin {
 }
 
 async function readSensorData(): Promise<SensorData> {
-  const sensorScriptFile = `${__dirname}/../src/lib/read-am2320-sensor.py`;
+  const sensorScriptFile = './lib/read-am2320-sensor.py';
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const spawn = require('child_process').spawn;
   const process = spawn('python3', [sensorScriptFile]);
