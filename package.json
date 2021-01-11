@@ -2,7 +2,7 @@
   "private": false,
   "displayName": "Homebridge AM2320 Plugin",
   "name": "homebridge-am2320-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Provides the AM2320 Sensor as accessories to your homebridge.",
   "license": "Apache-2.0",
   "repository": {
