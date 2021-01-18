@@ -7,10 +7,20 @@
 
 
 # Prerequirements
+- adafruit am2320 Sensor
 - installed homebridge (`npm install -g homebridge`)
 - Python executable `python3`
 
 ## Installation
+- Connect your am2320 as follows:
+```
+1. VDD (power)              // 3v3 Power Pin 1 on Raspberry 3
+2. SDA (I2C data in/out)    // e.g. GPIO 2, Pin 3 on Raspberry 3
+3. FND (ground)             // e.g. Pin 9 on Raspberry 3
+4. SCL (I2C clock in)       // e.g. GPIO 3, Pin 5 on Raspberry 3
+```
+
+To learn more have a loot at [official documentation](https://learn.adafruit.com/adafruit-am2320-temperature-humidity-i2c-sensor/python-circuitpython)
 
 - `npm install -g homebridge-am2320-plugin`
 - Update your `config.json`
